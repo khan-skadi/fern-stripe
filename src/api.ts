@@ -6,6 +6,9 @@ app.use(express.json());
 import cors from 'cors';
 app.use(cors({ origin: true }));
 
+// Sets rawBody for webhook handling
+app.use(express.json({ verify: (req, res, buffer) => (req['rawBody'] = buffer) }));
+
 app.post('/test', (req: Request, res: Response) => {
   const amount = req.body.amount;
 
@@ -24,15 +27,6 @@ app.post(
   })
 );
 
-/**
- * Catch async errors when awaiting promises
- */
-function runAsync(callback: Function) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    callback(req, res, next).catch(next);
-  };
-}
-
 import { createPaymentIntent } from './payments';
 
 /**
@@ -46,3 +40,21 @@ app.post(
     res.send(await createPaymentIntent(body.amount));
   })
 );
+
+import { handleStripeWebhook } from './webhooks';
+
+/**
+ * Webhooks
+ */
+
+// Handle webhooks
+app.post('/hooks', runAsync(handleStripeWebhook));
+
+/**
+ * Catch async errors when awaiting promises
+ */
+function runAsync(callback: Function) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    callback(req, res, next).catch(next);
+  };
+}
