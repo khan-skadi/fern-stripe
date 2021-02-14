@@ -9,7 +9,7 @@ const webhookHandlers = {
   'payment_intent.succeeded': async (data: Stripe.PaymentIntent) => {
     
   },
-  'payment_intent.payment_failed': async (data: Stripe.PaymentIntent) {
+  'payment_intent.payment_failed': async (data: Stripe.PaymentIntent) => {
 
   }
 }
