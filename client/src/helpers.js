@@ -1,6 +1,6 @@
 import { auth } from './firebase';
-const API = 'https://stripe-server-apw6lsu5yq-uc.a.run.app';
-// const API = 'http://localhost:3333';
+// const API = 'https://stripe-server-apw6lsu5yq-uc.a.run.app';
+const API = 'http://localhost:3333';
 
 /**
  * A helper function to fetch data from your API.
@@ -17,8 +17,8 @@ export async function fetchFromAPI(endpointURL, opts) {
     ...(body && { body: JSON.stringify(body) }),
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+      Authorization: `Bearer ${token}`
+    }
   });
 
   return res.json();
