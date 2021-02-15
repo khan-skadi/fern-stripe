@@ -2,14 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleStripeWebhook = void 0;
 const _1 = require("./");
+const firebase_1 = require("./firebase");
+const firebase_admin_1 = require("firebase-admin");
 /**
  * Business logic for specific webhook event types
  * ie: update database, send confirmation email etc
  */
 const webhookHandlers = {
-    'payment_intent.succeeded': async (data) => {
+    'checkout.session.completed': async (data) => { },
+    'payment_intent.succeeded': async (data) => { },
+    'payment_intent.payment_failed': async (data) => { },
+    'customer.subscription.deleted': async (data) => { },
+    'customer.subscription.created': async (data) => {
+        const customer = (await _1.stripe.customers.retrieve(data.customer));
+        const userId = customer.metadata.firebaseUID;
+        const userRef = firebase_1.db.collection('users').doc(userId);
+        await userRef.update({
+            activePlans: firebase_admin_1.firestore.FieldValue.arrayUnion(data.id)
+        });
     },
-    'payment_intent.payment_failed': async (data) => {
+    'invoice.payment_succeeded': async (data) => { },
+    'invoice.payment_failed': async (data) => {
+        const customer = (await _1.stripe.customers.retrieve(data.customer));
+        const userSnapshot = await firebase_1.db.collection('users').doc(customer.metadata.firebaseUID).get();
+        await userSnapshot.ref.update({ status: 'PAST_DUE' });
     }
 };
 /**
