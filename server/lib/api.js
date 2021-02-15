@@ -56,6 +56,17 @@ exports.app.post('/subscriptions', runAsync(async (req, res) => {
     const subscription = await billing_1.createSubscription(user.uid, plan, payment_method);
     res.send(subscription);
 }));
+// Get all subscriptions for a customer
+exports.app.get('/subscriptions/', runAsync(async (req, res) => {
+    const user = validateUser(req);
+    const subscriptions = await billing_1.listSubscriptions(user.uid);
+    res.send(subscriptions.data);
+}));
+// Unsubscribe or cancel a subscription
+exports.app.patch('/subscriptions/:id', runAsync(async (req, res) => {
+    const user = validateUser(req);
+    res.send(await billing_1.cancelSubscription(user.uid, req.params.id));
+}));
 const webhooks_1 = require("./webhooks");
 /**
  * Webhooks
