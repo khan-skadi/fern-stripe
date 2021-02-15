@@ -30,6 +30,22 @@ const payments_1 = require("./payments");
 exports.app.post('/payments', runAsync(async ({ body }, res) => {
     res.send(await payments_1.createPaymentIntent(body.amount));
 }));
+const customer_1 = require("./customer");
+/**
+ * Customers and Setup Intents
+ */
+// Save a card on the customer record with a SetupIntent
+exports.app.post('/wallet', runAsync(async (req, res) => {
+    const user = validateUser(req);
+    const SetupIntent = await customer_1.createSetupIntent(user.uid);
+    res.send(SetupIntent);
+}));
+// Retrieve all cards attached to a customer
+exports.app.get('/wallet', runAsync(async (req, res) => {
+    const user = validateUser(req);
+    const wallet = await customer_1.listPaymentMethods(user.uid);
+    res.send(wallet.data);
+}));
 const webhooks_1 = require("./webhooks");
 /**
  * Webhooks
@@ -64,5 +80,15 @@ function runAsync(callback) {
     return (req, res, next) => {
         callback(req, res, next).catch(next);
     };
+}
+/**
+ * Throws an error if the currentUser does not exist on the request
+ */
+function validateUser(req) {
+    const user = req['currentUser'];
+    if (!user) {
+        throw new Error('You must be logged in to make this request. i.e Authroization: Bearer <token>');
+    }
+    return user;
 }
 //# sourceMappingURL=api.js.map

@@ -41,6 +41,33 @@ app.post(
   })
 );
 
+import { createSetupIntent, listPaymentMethods } from './customer';
+
+/**
+ * Customers and Setup Intents
+ */
+
+// Save a card on the customer record with a SetupIntent
+app.post(
+  '/wallet',
+  runAsync(async (req: Request, res: Response) => {
+    const user = validateUser(req);
+    const SetupIntent = await createSetupIntent(user.uid);
+    res.send(SetupIntent);
+  })
+);
+
+// Retrieve all cards attached to a customer
+app.get(
+  '/wallet',
+  runAsync(async (req: Request, res: Response) => {
+    const user = validateUser(req);
+
+    const wallet = await listPaymentMethods(user.uid);
+    res.send(wallet.data);
+  })
+);
+
 import { handleStripeWebhook } from './webhooks';
 
 /**
@@ -81,4 +108,16 @@ function runAsync(callback: Function) {
   return (req: Request, res: Response, next: NextFunction) => {
     callback(req, res, next).catch(next);
   };
+}
+
+/**
+ * Throws an error if the currentUser does not exist on the request
+ */
+function validateUser(req: Request) {
+  const user = req['currentUser'];
+  if (!user) {
+    throw new Error('You must be logged in to make this request. i.e Authroization: Bearer <token>');
+  }
+
+  return user;
 }
