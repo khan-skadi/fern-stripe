@@ -68,6 +68,21 @@ app.get(
   })
 );
 
+/**
+ * Billing and Recurring Subscriptions
+ */
+
+// Create a subscription and charge new Subscription
+app.post(
+  '/subscriptions',
+  runAsync(async (req: Request, res: Response) => {
+    const user = validateUser(req);
+    const { plan, payment_method } = req.body;
+    const subscription = await createSubscription(user.uid, plan, payment_method);
+    res.send(subscription);
+  })
+);
+
 import { handleStripeWebhook } from './webhooks';
 
 /**
@@ -78,6 +93,7 @@ import { handleStripeWebhook } from './webhooks';
 app.post('/hooks', runAsync(handleStripeWebhook));
 
 import { auth } from './firebase';
+import { createSubscription } from './billing';
 
 // Decodes the Firebase JSON Web Token
 app.use(decodeJWT);

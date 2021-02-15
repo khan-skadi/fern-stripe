@@ -46,6 +46,16 @@ exports.app.get('/wallet', runAsync(async (req, res) => {
     const wallet = await customer_1.listPaymentMethods(user.uid);
     res.send(wallet.data);
 }));
+/**
+ * Billing and Recurring Subscriptions
+ */
+// Create a subscription and charge new Subscription
+exports.app.post('/subscriptions', runAsync(async (req, res) => {
+    const user = validateUser(req);
+    const { plan, payment_method } = req.body;
+    const subscription = await billing_1.createSubscription(user.uid, plan, payment_method);
+    res.send(subscription);
+}));
 const webhooks_1 = require("./webhooks");
 /**
  * Webhooks
@@ -53,6 +63,7 @@ const webhooks_1 = require("./webhooks");
 // Handle webhooks
 exports.app.post('/hooks', runAsync(webhooks_1.handleStripeWebhook));
 const firebase_1 = require("./firebase");
+const billing_1 = require("./billing");
 // Decodes the Firebase JSON Web Token
 exports.app.use(decodeJWT);
 /**
